@@ -57,6 +57,20 @@ sudo systemctl enable docker
 echo "👤 Kullanıcı docker grubuna ekleniyor..."
 sudo usermod -aG docker $USER
 
+# SSH Konfigürasyonu - PermitRootLogin yes
+echo "🔑 SSH konfigürasyonu güncelleniyor..."
+sudo sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+sudo sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Eğer PermitRootLogin satırı yoksa, ekle
+if ! grep -q "PermitRootLogin" /etc/ssh/sshd_config; then
+    echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
+fi
+
+# SSH servisini restart et
+echo "🔄 SSH servisi yeniden başlatılıyor..."
+sudo systemctl restart ssh
+
 # UFW güvenlik duvarını kur ve etkinleştir
 echo "🛡️ UFW güvenlik duvarı yapılandırılıyor..."
 sudo apt install -y ufw
@@ -121,6 +135,9 @@ claude --version
 echo "UFW durumu:"
 sudo ufw status
 
+echo "SSH PermitRootLogin durumu:"
+grep "PermitRootLogin" /etc/ssh/sshd_config
+
 echo "=================================================="
 echo "✅ Kurulum tamamlandı!"
 echo ""
@@ -131,6 +148,7 @@ echo "• UFW güvenlik duvarı etkinleştirildi"
 echo "• Açık portlar: 22 (SSH), 80 (HTTP), 443 (HTTPS)"
 echo "• Node.js 22.x LTS kuruldu"
 echo "• Claude Code kuruldu - API key'inizi ayarlamayı unutmayın"
+echo "• ⚠️  SSH Root Login etkinleştirildi - GÜVENLİK RİSKİ!"
 echo ""
 echo "🔑 Claude Code kurulumu:"
 echo "• API key ayarlamak için: claude auth"
@@ -140,4 +158,10 @@ echo "🧪 Test komutları:"
 echo "• Docker: docker run hello-world"
 echo "• Node.js: node --version"
 echo "• Claude Code: claude --help"
+echo ""
+echo "⚠️  GÜVENLİK UYARISI:"
+echo "• SSH Root Login etkinleştirildi"
+echo "• Root şifresini güçlü yapın: sudo passwd root"
+echo "• Mümkünse SSH key authentication kullanın"
+echo "• Sadece güvenilir ağlardan bağlantı kabul edin"
 echo "=================================================="
